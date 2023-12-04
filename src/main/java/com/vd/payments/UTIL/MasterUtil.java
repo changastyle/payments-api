@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MasterUtil
 {
-    public static List<String> readFile(String ruta, boolean verbose)
+    public static List<String> readLinesOfSQLFile(String ruta, boolean verbose)
     {
         List<String> arrSQLs = new ArrayList<>();
         StringBuffer acumulador = new StringBuffer();
@@ -22,19 +22,18 @@ public class MasterUtil
             String line;
             while ((line = bufferedReader.readLine()) != null)
             {
-                if (line.equalsIgnoreCase("||||"))
+                if (line.contains(";"))
                 {
+                    acumulador.append(line);
                     arrSQLs.add(acumulador.toString());
                     acumulador = new StringBuffer();
-                }
-                else
+                } else
                 {
                     acumulador.append(line);
                 }
 
 
-
-                if(verbose)
+                if (verbose)
                 {
                     System.out.println(line);
                 }
@@ -42,8 +41,7 @@ public class MasterUtil
 
             bufferedReader.close();
             fileReader.close();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -79,11 +77,10 @@ public class MasterUtil
 //            System.out.println("hour:" + hour);
 //            System.out.println("min:" + min);
 
-                ldt = LocalDateTime.of(year,mes,dia,hour, min);
+                ldt = LocalDateTime.of(year, mes, dia, hour, min);
 
             }
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ldt = LocalDateTime.now();
             e.printStackTrace();
@@ -92,6 +89,7 @@ public class MasterUtil
 
         return ldt;
     }
+
     public static int saberMiTimeZone()
     {
         // Specify the time zone for your location
@@ -112,5 +110,33 @@ public class MasterUtil
         System.out.println("You are " + hoursDifference + " hours from GMT.");
 
         return Integer.parseInt(String.valueOf(hoursDifference));
+    }
+
+    public static String leerArgumentosPrograma(String[] args)
+    {
+        String rta = "";
+        if (args.length > 0)
+        {
+            String sqlInit = args[0];
+            if(sqlInit != null)
+            {
+                if(sqlInit.length() > 0)
+                {
+                    rta = sqlInit;
+                }
+            }
+        }
+        else
+        {
+            rta = "";
+        }
+
+        return rta;
+    }
+    public static boolean leerArgumentosProgramaAsBoolean(String args[])
+    {
+        boolean rta = Boolean.parseBoolean(leerArgumentosPrograma(args));
+
+        return  rta;
     }
 }

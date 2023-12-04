@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OperadorREPO extends JpaRepository<Operador, Integer>
@@ -18,4 +19,17 @@ public interface OperadorREPO extends JpaRepository<Operador, Integer>
     public List<Operador> findOperadorPorInstalacion(int fkInstalacion);
 
 
+    default Operador getUsuarioPorEmailYPass(String email, String pass)
+    {
+        Operador rta = null;
+
+        List<Operador> arr = dameUsuarioPorEmailYPass(email,pass);
+
+        if(arr != null)
+        {
+            rta = arr.stream().findFirst().orElse(null);
+        }
+
+        return rta;
+    }
 }

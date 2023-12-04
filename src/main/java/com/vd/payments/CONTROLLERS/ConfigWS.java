@@ -3,6 +3,9 @@ package com.vd.payments.CONTROLLERS;
 import com.vd.payments.EXCEPTIONS.NotFoundExc;
 import com.vd.payments.MODELO.Config;
 import com.vd.payments.REPO.ConfigRepo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +48,10 @@ public class ConfigWS
 
 
     @GetMapping("dameConfigMaster")
+    @Operation(
+            summary = "RETURN MASTER CONFIG ENABLED",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public static Config dameConfigMaster()
     {
         Date ahora = new Date();

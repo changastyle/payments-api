@@ -58,6 +58,7 @@ public class UploadWS
 
         return fotoRTA;
     }
+
     @RequestMapping(value = "/foto/", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CrossOrigin
     public static Foto uploadOnlyFotoReturnURLToAttachToComponent
@@ -258,7 +259,6 @@ public class UploadWS
 
                         if (sizeEnDisco > 0)
                         {
-
                             File fotoYaCargada = new File(nombreFullArchivoEnDisco);
 
                             if(deboAchicar)
@@ -398,7 +398,7 @@ public class UploadWS
                                 .size(ancho, alto)
                                 .outputQuality(0.5)
                                 .outputFormat("jpg")
-                                .rotate(90)
+                                .rotate(0)
                                 .toFile(new File(nuevoNombreDisco));
                     } else
                     {

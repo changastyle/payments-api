@@ -2,6 +2,10 @@ package com.vd.payments.CONTROLLERS;
 
 import com.google.gson.Gson;
 import com.vd.payments.DelegatorAPI;
+import com.vd.payments.EXCEPTIONS.NoInstalacionExec;
+import com.vd.payments.EXCEPTIONS.NotFoundExc;
+import com.vd.payments.EXCEPTIONS.NotHeaderExc;
+import com.vd.payments.EXCEPTIONS.NoLogeadoExec;
 import com.vd.payments.XDTO.OperadorSaveDTO;
 import com.vd.payments.MODELO.Foto;
 import com.vd.payments.MODELO.Instalacion;
@@ -14,10 +18,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -47,6 +50,7 @@ public class LoginWS
 
     // WS LOGIN !!!!!!!!!!!!
     @PostMapping(value = "logearse")
+    @Operation(summary = "Get JWT from email and password of active User")
     @CrossOrigin(origins= {"*"}, maxAge = 4800, allowCredentials = "false" )
     public String logearse
     (
@@ -107,165 +111,107 @@ public class LoginWS
     @PostMapping(value = "dameOperadorLogeado")
     @Operation(summary = "Devuelve el operador logeado" , security = @SecurityRequirement(name = "bearerAuth"))
     @CrossOrigin
-    private static ResponseEntity<Operador> dameOperadorLogeadoWS(@RequestHeader HttpHeaders headers)
-    {
-        ResponseEntity responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
-
-        Operador operadorLogedoDB = dameOperadorLogeado(headers);
-
-        if(operadorLogedoDB  != null)
-        {
-            responseEntity = new ResponseEntity(operadorLogedoDB , HttpStatus.OK);
-        }
-
-        return responseEntity;
-    }
-//    public static Operador dameOperadorLogeado(@RequestHeader HttpHeaders headers)
-//    public static Operador dameOperadorLogeado(String token)
-//    {
-//        System.out.println("|----------------------------- COMPROBANDO OPERADOR LOGEADO TOKEN ----------------------|");
-//
-//        Operador operadorLogedoDB = null;
-//
-//        if(DelegatorAPI.MODO_DEV)
-//        {
-//            operadorLogedoDB = getOperadorByID(1);
-//        }
-//        else
-//        {
-//            operadorLogedoDB = getOperadorFromTokenReal(token);
-//        }
-//        return operadorLogedoDB;
-//    }
-    public static Operador dameOperadorLogeado(HttpHeaders headers)
+    public static Operador dameOperadorLogeado(@RequestHeader HttpHeaders headers) throws NotHeaderExc
     {
         System.out.println("|----------------------------- COMPROBANDO OPERADOR LOGEADO ----------------------|");
 
         Operador operadorLogedoDB = null;
 
-        if(DelegatorAPI.MODO_DEV)
+        operadorLogedoDB = getOperadorFromToken(headers);
+
+        if(operadorLogedoDB == null)
         {
-            operadorLogedoDB = getOperadorByID(1);
-        }
-        else
-        {
-            operadorLogedoDB = getOperadorFromToken(headers);
+            if(DelegatorAPI.MODO_DEV)
+            {
+                operadorLogedoDB = getOperadorByID(headers,1);
+            }
         }
 
         return operadorLogedoDB;
     }
 
-    public static Operador getOperadorFromTokenReal(String token)
+    public static Operador getOperadorFromToken(HttpHeaders headers) throws NotHeaderExc
     {
         Operador operadorDB = null;
 
-        System.out.println("    TOKEEEEN:" + token);
-
-        LoginParser operadorParser = jwtDecode(token);
-
-        if (operadorParser != null)
+        if(!DelegatorAPI.MODO_DEV)
         {
-            String idStr = operadorParser.getId();
-            String emailToken = operadorParser.getEmail();
-            Date fechaExpiracion = operadorParser.getFechaExp();
-
-            System.out.println("|---------------------------------|");
-            System.out.println("        FECHA EXPIRECION: " + fechaExpiracion);
-            System.out.println("|---------------------------------|");
-
-            if (idStr != null)
+            if(headers != null)
             {
-                int id = Integer.parseInt(idStr);
-
-                if (id != -1 && id != 0)
+                if(headers.size() > 0)
                 {
-                    // 1 - COMPRUEBO QUE EL ID Y EL EMAIL DEL USUARIO SEAN EL MISMO:
-                    if (emailToken != null && id != -1)
-                    {
-                        Operador operadorAux = getOperadorByID(id);
+                    List<String> arrStrTokens = headers.get("authorization");
+                    System.out.println("HEADERS:" + headers.toString());
 
-                        if (operadorAux != null)
+                    if (arrStrTokens != null)
+                    {
+                        if (arrStrTokens.size() > 0)
                         {
-                            // 2 - TENGO EL USUARIO POR ID Y VERIFICO QUE EL EMAIL SEA EL MISMO:
-                            if (operadorAux.getEmail().equalsIgnoreCase(emailToken))
+                            String token = arrStrTokens.get(0);
+
+                            String bearer = "Bearer ";
+                            if(token.startsWith(bearer))
                             {
-                                operadorDB = operadorAux;
+                                token = token.substring(bearer.length() , token.length());
                             }
-                        }
-                    }
-                }
-            }
-        }
+
+                            System.out.println("    TOKEEEEN:" + token);
 
 
-        return operadorDB;
-    }
-    public static Operador getOperadorFromToken(HttpHeaders headers)
-    {
-        Operador operadorDB = null;
+                            LoginParser operadorParser = jwtDecode(token);
 
-
-        if(headers != null)
-        {
-            if(headers.size() > 0)
-            {
-                List<String> arrStrTokens = headers.get("authorization");
-                System.out.println("HEADERS:" + headers.toString());
-
-
-
-                if (arrStrTokens != null)
-                {
-                    if (arrStrTokens.size() > 0)
-                    {
-                        String token = arrStrTokens.get(0);
-
-                        String bearer = "Bearer ";
-                        if(token.startsWith(bearer))
-                        {
-                            token = token.substring(bearer.length() , token.length());
-                        }
-
-                        System.out.println("    TOKEEEEN:" + token);
-
-
-                        LoginParser operadorParser = jwtDecode(token);
-
-                        if (operadorParser != null)
-                        {
-                            String idStr = operadorParser.getId();
-                            String emailToken = operadorParser.getEmail();
-                            Date fechaExpiracion = operadorParser.getFechaExp();
-
-                            System.out.println("|---------------------------------|");
-                            System.out.println("        FECHA EXPIRECION: " + fechaExpiracion);
-                            System.out.println("|---------------------------------|");
-
-                            if (idStr != null)
+                            if (operadorParser != null)
                             {
-                                int id = Integer.parseInt(idStr);
+                                String idStr = operadorParser.getId();
+                                String emailToken = operadorParser.getEmail();
+                                Date fechaExpiracion = operadorParser.getFechaExp();
 
-                                if (id != -1 && id != 0)
+                                System.out.println("|---------------------------------|");
+                                System.out.println("        FECHA EXPIRECION: " + fechaExpiracion);
+                                System.out.println("|---------------------------------|");
+
+                                if (idStr != null)
                                 {
-                                    // 1 - COMPRUEBO QUE EL ID Y EL EMAIL DEL USUARIO SEAN EL MISMO:
-                                    if (emailToken != null && id != -1)
-                                    {
-                                        Operador operadorAux = getOperadorByID(id);
+                                    int id = Integer.parseInt(idStr);
 
-                                        if (operadorAux != null)
+                                    if (id != -1 && id != 0)
+                                    {
+                                        // 1 - COMPRUEBO QUE EL ID Y EL EMAIL DEL USUARIO SEAN EL MISMO:
+                                        if (emailToken != null && id != -1)
                                         {
-                                            // 2 - TENGO EL USUARIO POR ID Y VERIFICO QUE EL EMAIL SEA EL MISMO:
-                                            if (operadorAux.getEmail().equalsIgnoreCase(emailToken))
+                                            Operador operadorAux = getOperadorByID(headers , id);
+
+                                            if (operadorAux != null)
                                             {
-                                                operadorDB = operadorAux;
+                                                // 2 - TENGO EL USUARIO POR ID Y VERIFICO QUE EL EMAIL SEA EL MISMO:
+                                                if (operadorAux.getEmail().equalsIgnoreCase(emailToken))
+                                                {
+                                                    operadorDB = operadorAux;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+                        else
+                        {
+                            throw new NotHeaderExc("HEADER AUTORIZATION NULL");
+                        }
+                    }
+                    else
+                    {
+                        throw new NotHeaderExc("HEADER AUTORIZATION NULL");
                     }
                 }
+                else
+                {
+                    throw new NotHeaderExc("HEADERS SIZE < 0");
+                }
+            }
+            else
+            {
+                throw new NotHeaderExc("ARR HEADERS == NULL");
             }
         }
 
@@ -274,9 +220,9 @@ public class LoginWS
     }
 
     private static LoginParser jwtDecode
-            (
-                    @RequestParam(value = "token" , required = true) String token
-            )
+    (
+            @RequestParam(value = "token" , required = true) String token
+    )
     {
         String payload ="";
         Operador operadorDB = null;
@@ -340,6 +286,10 @@ public class LoginWS
 
     @GetMapping(value = "/")
     @CrossOrigin
+    @Operation(
+            summary = "List all the users of my company ",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public List<Operador> findOperadors
     (
             @RequestHeader HttpHeaders headers
@@ -347,8 +297,7 @@ public class LoginWS
     {
         List<Operador> arrOperadores = new ArrayList<Operador>();
 
-        Operador operadorLogeado = null ;
-//        Operador operadorLogeado = dameOperadorLogeado(headers) ;
+        Operador operadorLogeado = dameOperadorLogeado(headers) ;
 
         if(operadorLogeado != null)
         {
@@ -356,58 +305,122 @@ public class LoginWS
 
             if(fkInstalacion != -1)
             {
-                operadorREPO.findOperadorPorInstalacion(1);
-
-                arrOperadores = operadorREPO.findAll();
+                arrOperadores = operadorREPO.findOperadorPorInstalacion(1);
                 Collections.sort(arrOperadores);
             }
+            else
+            {
+                throw new NoInstalacionExec("Instalacion no valida : " + fkInstalacion );
+            }
         }
-
-
+        else
+        {
+            throw new NoLogeadoExec("Operador no logeado");
+        }
 
         return arrOperadores;
     }
     @GetMapping(value = "/{id}")
     @CrossOrigin
-    public static Operador getOperadorByID(@PathVariable("id") int id)
+    @Operation(
+            summary = "Return user by ID",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public static Operador getOperadorByID(
+            @RequestHeader HttpHeaders headers,
+            @PathVariable("id") int id)
     {
-        return operadorREPO.getById(id);
+        Operador operadorRTA = null;
+        Operador operadorLogeado = dameOperadorLogeado(headers) ;
+
+        if(operadorLogeado != null)
+        {
+            int fkInstalacion = operadorLogeado.getFKConsultorioAsociado();
+
+            if(fkInstalacion != -1)
+            {
+                operadorRTA = operadorREPO.getById(id);
+            }
+            else
+            {
+                throw new NoInstalacionExec("Instalacion no valida : " + fkInstalacion );
+            }
+        }
+        else
+        {
+            throw new NoLogeadoExec("Operador no logeado");
+        }
+
+        if(operadorRTA == null)
+        {
+            throw new NotFoundExc("Operador with ID (" +  id + ") NOT FOUND");
+        }
+
+        return operadorRTA;
     }
 
 
-    @PostMapping("save")
-    public Operador save(@RequestBody OperadorSaveDTO operadorSaveDTO)
+    @PostMapping("create")
+    @Operation(
+            summary = "Create new Usuario",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public Operador create
+    (
+        @RequestBody @Valid OperadorSaveDTO operadorSaveDTO,
+        @RequestHeader HttpHeaders headers
+    )
     {
         Operador operadorNew = null;
+        Operador operadorLogeado = dameOperadorLogeado(headers);
 
-        if(operadorSaveDTO != null)
+        if(operadorLogeado != null)
         {
-            operadorNew = (Operador) operadorSaveDTO.toEntity(Operador.class);
-
-            int fkInstalacion = operadorSaveDTO.getFkInstalacion();
-            if(fkInstalacion != -1)
+            if(operadorSaveDTO != null)
             {
-                Instalacion instalacionDB = instalacionRepo.getById(fkInstalacion);
+                operadorNew = (Operador) operadorSaveDTO.toEntity(Operador.class);
 
-                if(instalacionDB != null)
+                Instalacion instalacion = operadorLogeado.getInstalacion();
+                if(instalacion != null)
                 {
-                    operadorNew.setInstalacion(instalacionDB);
-
-                    Foto fotoDefault = FotosWS.porDefecto();
-                    operadorNew.setFotoPerfil(fotoDefault);
-
-                    String strSexo = "Femenino";
-                    if(operadorSaveDTO.getSexo() == Sexo.Masculino)
+                    int fkInstalacion = instalacion.getId();
+                    if(fkInstalacion != -1)
                     {
-                        strSexo = "Masculino";
-                    }
+                        Instalacion instalacionDB = instalacionRepo.getById(fkInstalacion);
 
-                    operadorNew.setSexo(strSexo);
-                    operadorNew.setFechaCreacion(LocalDate.now());
-                    operadorNew.setActivo(true);
-                    operadorNew = operadorREPO.save(operadorNew);
+                        if(instalacionDB != null)
+                        {
+                            operadorNew.setInstalacion(instalacionDB);
+
+                            Foto fotoDefault = FotosWS.porDefecto();
+                            operadorNew.setFotoPerfil(fotoDefault);
+
+                            String strSexo = "Femenino";
+                            if(operadorSaveDTO.getSexo() == Sexo.Masculino)
+                            {
+                                strSexo = "Masculino";
+                            }
+
+                            operadorNew.setSexo(strSexo);
+                            operadorNew.setFechaCreacion(LocalDate.now());
+                            operadorNew.setActivo(true);
+                            operadorNew = operadorREPO.save(operadorNew);
+                        }
+                        else
+                        {
+                            throw new NoInstalacionExec("Instalacion DB = NULL");
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NoInstalacionExec("Operador Logeado.Instalacion = NULL");
                 }
             }
+        }
+        else
+        {
+            throw new NoLogeadoExec("NO hay operador logeado..");
         }
 
         return operadorNew;
