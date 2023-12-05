@@ -20,11 +20,11 @@ public class Grupo implements Comparable<Grupo>
     private Instalacion instalacion;
 
     @OneToOne(cascade = CascadeType.PERSIST) @JoinColumn(name = "fkLogo")
-    private Foto logo;
+    private Documento logo;
     boolean activo;
     public Grupo()
     {
-        logo = new Foto("default.jpg");
+        logo = new Documento("default.jpg");
     }
 
     public int compareTo(Grupo otro)

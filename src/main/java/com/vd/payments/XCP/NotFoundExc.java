@@ -1,4 +1,4 @@
-package com.vd.payments.EXCEPTIONS;
+package com.vd.payments.XCP;
 
 // Define una excepción personalizada para indicar la falta de configuraciones
 //@ResponseStatus(value = HttpStatus.NOT_FOUND)

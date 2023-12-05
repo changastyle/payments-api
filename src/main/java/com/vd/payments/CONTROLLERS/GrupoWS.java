@@ -1,9 +1,9 @@
 package com.vd.payments.CONTROLLERS;
 
+import com.vd.payments.MODELO.Documento;
+import com.vd.payments.REPO.DocREPO;
 import com.vd.payments.XDTO.GrupoSDTO;
-import com.vd.payments.REPO.FotoRepo;
 import com.vd.payments.REPO.GrupoREPO;
-import com.vd.payments.MODELO.Foto;
 import com.vd.payments.MODELO.Grupo;
 import com.vd.payments.MODELO.Instalacion;
 import com.vd.payments.MODELO.Operador;
@@ -22,13 +22,13 @@ import java.util.Optional;
 public class GrupoWS
 {
     private static GrupoREPO grupoREPO;
-    private static FotoRepo fotoRepo;
+    private static DocREPO docREPO;
 
     @Autowired
-    public GrupoWS(GrupoREPO grupoREPO, FotoRepo fotoRepo)
+    public GrupoWS(GrupoREPO grupoREPO, DocREPO docREPO)
     {
         GrupoWS.grupoREPO = grupoREPO;
-        GrupoWS.fotoRepo = fotoRepo;
+        GrupoWS.docREPO = docREPO;
     }
 
     public static Optional<Instalacion> dameInstalacion(HttpHeaders headers)
@@ -83,7 +83,7 @@ public class GrupoWS
             {
                 if(grupoNew != null)
                 {
-                    Foto logo = fotoRepo.getById(grupoSDTO.getFkLogo());
+                    Documento logo = docREPO.getById(grupoSDTO.getFkLogo());
 
                     if(logo != null)
                     {

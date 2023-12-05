@@ -1,14 +1,13 @@
 package com.vd.payments;
 
-import com.vd.payments.EXCEPTIONS.NoInstalacionExec;
-import com.vd.payments.EXCEPTIONS.NotFoundExc;
-import com.vd.payments.EXCEPTIONS.NotHeaderExc;
-import com.vd.payments.EXCEPTIONS.NoLogeadoExec;
+import com.vd.payments.XCP.NoInstalacionExc;
+import com.vd.payments.XCP.NotFoundExc;
+import com.vd.payments.XCP.NotHeaderExc;
+import com.vd.payments.XCP.NoLogeadoExc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,8 +25,8 @@ public class Advice extends ResponseEntityExceptionHandler
     {
         return new ResponseEntity<>(exception.message , HttpStatus.NOT_FOUND);
     }
-    @ExceptionHandler(value = NoLogeadoExec.class)
-    public ResponseEntity<Object> notLogged(NoLogeadoExec exception)
+    @ExceptionHandler(value = NoLogeadoExc.class)
+    public ResponseEntity<Object> notLogged(NoLogeadoExc exception)
     {
         return new ResponseEntity<>(exception.message , HttpStatus.NOT_FOUND);
     }
@@ -36,8 +35,8 @@ public class Advice extends ResponseEntityExceptionHandler
     {
         return new ResponseEntity<>(exception.message , HttpStatus.NOT_FOUND);
     }
-    @ExceptionHandler(value = NoInstalacionExec.class)
-    public ResponseEntity<Object> noInstalacion(NoInstalacionExec exception)
+    @ExceptionHandler(value = NoInstalacionExc.class)
+    public ResponseEntity<Object> noInstalacion(NoInstalacionExc exception)
     {
         return new ResponseEntity<>(exception.message , HttpStatus.NOT_FOUND);
     }

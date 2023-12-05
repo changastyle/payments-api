@@ -17,7 +17,7 @@ public class Instalacion implements Comparable<Instalacion>
     private String nombre;
 
     @OneToOne() @JoinColumn(name = "fkLogo")
-    private Foto logo;
+    private Documento logo;
     private String urlWEB;
 
     @OneToMany(cascade = CascadeType.PERSIST,mappedBy = "instalacion") @JsonIgnore
@@ -32,7 +32,7 @@ public class Instalacion implements Comparable<Instalacion>
     boolean activo;
     public Instalacion()
     {
-        logo = new Foto("default.jpg");
+        logo = new Documento("default.jpg");
         arrOperadores = new ArrayList<>();
 //        arrProductos = new ArrayList<>();
     }

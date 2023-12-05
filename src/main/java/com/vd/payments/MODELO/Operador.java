@@ -34,7 +34,7 @@ public class Operador  implements Comparable<Operador>
     private String sexo;
 
     @OneToOne() @JoinColumn(name = "fkFotoPerfil")
-    private Foto fotoPerfil;
+    private Documento fotoPerfil;
 
     private boolean activo;
 

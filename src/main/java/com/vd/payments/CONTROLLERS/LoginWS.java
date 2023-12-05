@@ -2,12 +2,12 @@ package com.vd.payments.CONTROLLERS;
 
 import com.google.gson.Gson;
 import com.vd.payments.DelegatorAPI;
-import com.vd.payments.EXCEPTIONS.NoInstalacionExec;
-import com.vd.payments.EXCEPTIONS.NotFoundExc;
-import com.vd.payments.EXCEPTIONS.NotHeaderExc;
-import com.vd.payments.EXCEPTIONS.NoLogeadoExec;
+import com.vd.payments.MODELO.Documento;
+import com.vd.payments.XCP.NoInstalacionExc;
+import com.vd.payments.XCP.NotFoundExc;
+import com.vd.payments.XCP.NotHeaderExc;
+import com.vd.payments.XCP.NoLogeadoExc;
 import com.vd.payments.XDTO.OperadorSaveDTO;
-import com.vd.payments.MODELO.Foto;
 import com.vd.payments.MODELO.Instalacion;
 import com.vd.payments.MODELO.Operador;
 import com.vd.payments.MODELO.enums.Sexo;
@@ -268,6 +268,30 @@ public class LoginWS
         return loginParser;
     }
 
+    @PostMapping(value = "getFKInstalacionFromOperadorLogeado")
+    @Operation(summary = "Devuelve el FK-INSTALACION del operador logeado" , security = @SecurityRequirement(name = "bearerAuth"))
+    @CrossOrigin
+    public static int getFKInstalacionOperadorLogeado(@RequestHeader HttpHeaders headers) throws NotHeaderExc
+    {
+        int fkInstalacion = -1;
+
+        System.out.println("|----------------------------- GETTING FK INSTALACION FROM OPERADOR LOGEADO ----------------------|");
+
+        Operador operadorLogedoDB = dameOperadorLogeado(headers);
+
+        if(operadorLogedoDB != null)
+        {
+            Instalacion instalacionOPeradorLogeado = operadorLogedoDB.getInstalacion();
+
+            if(instalacionOPeradorLogeado != null)
+            {
+                fkInstalacion = instalacionOPeradorLogeado.getId();
+            }
+
+        }
+
+        return fkInstalacion;
+    }
 
 
 
@@ -310,12 +334,12 @@ public class LoginWS
             }
             else
             {
-                throw new NoInstalacionExec("Instalacion no valida : " + fkInstalacion );
+                throw new NoInstalacionExc("Instalacion no valida : " + fkInstalacion );
             }
         }
         else
         {
-            throw new NoLogeadoExec("Operador no logeado");
+            throw new NoLogeadoExc("Operador no logeado");
         }
 
         return arrOperadores;
@@ -326,30 +350,15 @@ public class LoginWS
             summary = "Return user by ID",
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    public static Operador getOperadorByID(
+    public static Operador getOperadorByID
+    (
             @RequestHeader HttpHeaders headers,
-            @PathVariable("id") int id)
+            @PathVariable("id") int id
+    )
     {
         Operador operadorRTA = null;
-        Operador operadorLogeado = dameOperadorLogeado(headers) ;
 
-        if(operadorLogeado != null)
-        {
-            int fkInstalacion = operadorLogeado.getFKConsultorioAsociado();
-
-            if(fkInstalacion != -1)
-            {
-                operadorRTA = operadorREPO.getById(id);
-            }
-            else
-            {
-                throw new NoInstalacionExec("Instalacion no valida : " + fkInstalacion );
-            }
-        }
-        else
-        {
-            throw new NoLogeadoExec("Operador no logeado");
-        }
+        operadorRTA = operadorREPO.getByIDN(id);
 
         if(operadorRTA == null)
         {
@@ -392,7 +401,7 @@ public class LoginWS
                         {
                             operadorNew.setInstalacion(instalacionDB);
 
-                            Foto fotoDefault = FotosWS.porDefecto();
+                            Documento fotoDefault = DocWS.porDefecto();
                             operadorNew.setFotoPerfil(fotoDefault);
 
                             String strSexo = "Femenino";
@@ -408,19 +417,19 @@ public class LoginWS
                         }
                         else
                         {
-                            throw new NoInstalacionExec("Instalacion DB = NULL");
+                            throw new NoInstalacionExc("Instalacion DB = NULL");
                         }
                     }
                 }
                 else
                 {
-                    throw new NoInstalacionExec("Operador Logeado.Instalacion = NULL");
+                    throw new NoInstalacionExc("Operador Logeado.Instalacion = NULL");
                 }
             }
         }
         else
         {
-            throw new NoLogeadoExec("NO hay operador logeado..");
+            throw new NoLogeadoExc("NO hay operador logeado..");
         }
 
         return operadorNew;

@@ -1,6 +1,7 @@
 package com.vd.payments.UTIL.serializer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.time.*;
 import java.util.ArrayList;
@@ -89,7 +90,83 @@ public class MasterUtil
 
         return ldt;
     }
+    public static String formatearLDTForFiles(LocalDateTime ldt)
+    {
+        String rta = "";
+        if(ldt != null)
+        {
+            int year = ldt.getYear();
+            int mes = ldt.getMonthValue();
+            int dia = ldt.getDayOfMonth();
+            int hours = ldt.getHour();
+            int minutes = ldt.getMinute();
+            int seconds = ldt.getSecond();
 
+            String strYear = MasterUtil.checkZeros(year);
+            String strMes = MasterUtil.checkZeros(mes);
+            String strDias = MasterUtil.checkZeros(dia);
+            String strHora = MasterUtil.checkZeros(hours);
+            String strMin = MasterUtil.checkZeros(minutes);
+            String strSec = MasterUtil.checkZeros(seconds);
+
+            rta =  strYear +"_" + strMes + "_" + strDias + "_" + strHora + "_" + strMin + "_" + strSec;
+        }
+
+        return rta;
+    }
+    public static String generarCodigoAleatorio(int cantDigitos)
+    {
+        String rta = "";
+
+        for(int i = 0 ; i < cantDigitos ;i++)
+        {
+            int random = (int) (Math.random() * 10);
+
+            rta += String.valueOf(random);
+        }
+
+        return rta;
+    }
+    public static boolean verifyFolderExist(String rutaCarpetaEnDisco)
+    {
+        boolean exist = false;
+
+        File carpetaDondeLoGuardo = new File(rutaCarpetaEnDisco);
+
+        if (!carpetaDondeLoGuardo.exists())
+        {
+            carpetaDondeLoGuardo.mkdir();
+        }
+        return exist;
+    }
+
+    public static String checkZeros(int numero)
+    {
+        String rta = String.valueOf(numero);
+
+        if(numero < 10)
+        {
+            rta = "0"+ numero;
+        }
+
+        return  rta;
+    }
+    public static String separatePipeByPos(String strRaw , int posDeseada)
+    {
+        String rta = String.valueOf(strRaw);
+
+        List<String> arrSplited = Arrays.asList(strRaw.split("\\|"));
+
+        if(arrSplited != null)
+        {
+            if(arrSplited.size() >= posDeseada)
+            {
+                rta = arrSplited.get(posDeseada);
+            }
+        }
+
+        return  rta;
+    }
     public static int saberMiTimeZone()
     {
         // Specify the time zone for your location
@@ -138,5 +215,17 @@ public class MasterUtil
         boolean rta = Boolean.parseBoolean(leerArgumentosPrograma(args));
 
         return  rta;
+    }
+
+    public static boolean calcularSiArchivoEsFoto(String nuevoNombreFullFS)
+    {
+        boolean rta = false;
+
+        if(nuevoNombreFullFS.endsWith(".jpg") || nuevoNombreFullFS.endsWith(".jpeg") || nuevoNombreFullFS.endsWith(".png") || nuevoNombreFullFS.endsWith(".gif")   )
+        {
+            rta = true;
+        }
+
+        return rta;
     }
 }

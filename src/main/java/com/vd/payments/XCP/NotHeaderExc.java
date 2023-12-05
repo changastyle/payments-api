@@ -1,4 +1,4 @@
-package com.vd.payments.EXCEPTIONS;
+package com.vd.payments.XCP;
 
 public class NotHeaderExc extends RuntimeException
 {

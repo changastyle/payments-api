@@ -58,7 +58,7 @@ public class InstalacionWS
         {
             instalacionNew = (Instalacion) instalacionSaveDTO.toEntity(Instalacion.class);
 
-            instalacionNew.setLogo(FotosWS.porDefecto());
+            instalacionNew.setLogo(DocWS.porDefecto());
 
             instalacionNew = instalacionRepo.save(instalacionNew);
 

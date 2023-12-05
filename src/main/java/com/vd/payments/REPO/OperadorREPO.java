@@ -17,6 +17,8 @@ public interface OperadorREPO extends JpaRepository<Operador, Integer>
 
     @Query("SELECT o FROM Operador o WHERE o.instalacion.id = ?1" )
     public List<Operador> findOperadorPorInstalacion(int fkInstalacion);
+    @Query("SELECT o FROM Operador o WHERE o.id = :id AND o.activo = true" )
+    public List<Operador> findByID(int id);
 
 
     default Operador getUsuarioPorEmailYPass(String email, String pass)
@@ -24,6 +26,19 @@ public interface OperadorREPO extends JpaRepository<Operador, Integer>
         Operador rta = null;
 
         List<Operador> arr = dameUsuarioPorEmailYPass(email,pass);
+
+        if(arr != null)
+        {
+            rta = arr.stream().findFirst().orElse(null);
+        }
+
+        return rta;
+    }
+    default Operador getByIDN(int id)
+    {
+        Operador rta = null;
+
+        List<Operador> arr = findByID(id);
 
         if(arr != null)
         {

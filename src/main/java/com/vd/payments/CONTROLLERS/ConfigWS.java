@@ -1,9 +1,8 @@
 package com.vd.payments.CONTROLLERS;
 
-import com.vd.payments.EXCEPTIONS.NotFoundExc;
+import com.vd.payments.XCP.NotFoundExc;
 import com.vd.payments.MODELO.Config;
 import com.vd.payments.REPO.ConfigRepo;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
