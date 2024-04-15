@@ -28,7 +28,8 @@ public class MasterUtil
                     acumulador.append(line);
                     arrSQLs.add(acumulador.toString());
                     acumulador = new StringBuffer();
-                } else
+                }
+                else
                 {
                     acumulador.append(line);
                 }
@@ -42,7 +43,8 @@ public class MasterUtil
 
             bufferedReader.close();
             fileReader.close();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -62,7 +64,7 @@ public class MasterUtil
             if (posLastSlash > -1)
             {
                 String dateStr = dateRecibed.substring(0, posLastSlash);
-                String timeStr = dateRecibed.substring(posLastSlash + 1, dateRecibed.length());
+                String timeStr = dateRecibed.substring(posLastSlash + 1);
                 List<String> partesFecha = Arrays.asList(dateStr.split("-"));
                 List<String> partesTime = Arrays.asList(timeStr.split("\\."));
 
@@ -81,7 +83,8 @@ public class MasterUtil
                 ldt = LocalDateTime.of(year, mes, dia, hour, min);
 
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             ldt = LocalDateTime.now();
             e.printStackTrace();
@@ -90,10 +93,11 @@ public class MasterUtil
 
         return ldt;
     }
+
     public static String formatearLDTForFiles(LocalDateTime ldt)
     {
         String rta = "";
-        if(ldt != null)
+        if (ldt != null)
         {
             int year = ldt.getYear();
             int mes = ldt.getMonthValue();
@@ -109,16 +113,83 @@ public class MasterUtil
             String strMin = MasterUtil.checkZeros(minutes);
             String strSec = MasterUtil.checkZeros(seconds);
 
-            rta =  strYear +"_" + strMes + "_" + strDias + "_" + strHora + "_" + strMin + "_" + strSec;
+            rta = strYear + "_" + strMes + "_" + strDias + "_" + strHora + "_" + strMin + "_" + strSec;
         }
 
         return rta;
     }
+
+    public static String formatearFechaBonita(LocalDateTime ldt, boolean incluirHora, boolean incluirSegs)
+    {
+        String rta = "";
+        if (ldt != null)
+        {
+            int year = ldt.getYear();
+            int mes = ldt.getMonthValue();
+            int dia = ldt.getDayOfMonth();
+            int hours = ldt.getHour();
+            int minutes = ldt.getMinute();
+            int seconds = ldt.getSecond();
+
+            String strYear = MasterUtil.checkZeros(year);
+            String strMes = MasterUtil.checkZeros(mes);
+            String strDias = MasterUtil.checkZeros(dia);
+            String strHora = MasterUtil.checkZeros(hours);
+            String strMin = MasterUtil.checkZeros(minutes);
+            String strSec = MasterUtil.checkZeros(seconds);
+
+            rta = strDias + "/" + strMes + "/" + strYear;
+            if (incluirHora)
+            {
+                rta += " (" + strHora + ":" + strMin + ")";
+            }
+            if (incluirSegs)
+            {
+                rta += strSec;
+            }
+//            rta =  strYear +"_" + strMes + "_" + strDias + "_" + strHora + "_" + strMin + "_" + strSec;
+        }
+
+        return rta;
+    }
+
+    public static String formatearOnlyFechaOrHoraBonita(LocalDateTime ldt, boolean soloHora)
+    {
+        String rta = "";
+        if (ldt != null)
+        {
+            int year = ldt.getYear();
+            int mes = ldt.getMonthValue();
+            int dia = ldt.getDayOfMonth();
+            int hours = ldt.getHour();
+            int minutes = ldt.getMinute();
+            int seconds = ldt.getSecond();
+
+            String strYear = MasterUtil.checkZeros(year);
+            String strMes = MasterUtil.checkZeros(mes);
+            String strDias = MasterUtil.checkZeros(dia);
+            String strHora = MasterUtil.checkZeros(hours);
+            String strMin = MasterUtil.checkZeros(minutes);
+            String strSec = MasterUtil.checkZeros(seconds);
+
+            if (soloHora)
+            {
+                rta = "(" + strHora + ":" + strMin + ")";
+            }
+            else
+            {
+                rta = strDias + "/" + strMes + "/" + strYear;
+            }
+        }
+
+        return rta;
+    }
+
     public static String generarCodigoAleatorio(int cantDigitos)
     {
         String rta = "";
 
-        for(int i = 0 ; i < cantDigitos ;i++)
+        for (int i = 0; i < cantDigitos; i++)
         {
             int random = (int) (Math.random() * 10);
 
@@ -127,6 +198,7 @@ public class MasterUtil
 
         return rta;
     }
+
     public static boolean verifyFolderExist(String rutaCarpetaEnDisco)
     {
         boolean exist = false;
@@ -144,29 +216,44 @@ public class MasterUtil
     {
         String rta = String.valueOf(numero);
 
-        if(numero < 10)
+        if (numero < 10)
         {
-            rta = "0"+ numero;
+            rta = "0" + numero;
         }
 
-        return  rta;
+        return rta;
     }
-    public static String separatePipeByPos(String strRaw , int posDeseada)
+
+    public static boolean isNumeric(String str)
+    {
+        try
+        {
+            Double.parseDouble(str);
+            return true;
+        }
+        catch (NumberFormatException e)
+        {
+            return false;
+        }
+    }
+
+    public static String separatePipeByPos(String strRaw, int posDeseada)
     {
         String rta = String.valueOf(strRaw);
 
         List<String> arrSplited = Arrays.asList(strRaw.split("\\|"));
 
-        if(arrSplited != null)
+        if (arrSplited != null)
         {
-            if(arrSplited.size() >= posDeseada)
+            if (arrSplited.size() >= posDeseada)
             {
                 rta = arrSplited.get(posDeseada);
             }
         }
 
-        return  rta;
+        return rta;
     }
+
     public static int saberMiTimeZone()
     {
         // Specify the time zone for your location
@@ -195,9 +282,9 @@ public class MasterUtil
         if (args.length > 0)
         {
             String sqlInit = args[0];
-            if(sqlInit != null)
+            if (sqlInit != null)
             {
-                if(sqlInit.length() > 0)
+                if (sqlInit.length() > 0)
                 {
                     rta = sqlInit;
                 }
@@ -210,22 +297,34 @@ public class MasterUtil
 
         return rta;
     }
-    public static boolean leerArgumentosProgramaAsBoolean(String args[])
+
+    public static boolean leerArgumentosProgramaAsBoolean(String[] args)
     {
         boolean rta = Boolean.parseBoolean(leerArgumentosPrograma(args));
 
-        return  rta;
+        return rta;
     }
 
     public static boolean calcularSiArchivoEsFoto(String nuevoNombreFullFS)
     {
-        boolean rta = false;
+        boolean rta = nuevoNombreFullFS.endsWith(".jpg") || nuevoNombreFullFS.endsWith(".jpeg") || nuevoNombreFullFS.endsWith(".png") || nuevoNombreFullFS.endsWith(".gif");
 
-        if(nuevoNombreFullFS.endsWith(".jpg") || nuevoNombreFullFS.endsWith(".jpeg") || nuevoNombreFullFS.endsWith(".png") || nuevoNombreFullFS.endsWith(".gif")   )
+        return rta;
+    }
+
+    public static String pMayus(String str)
+    {
+        String rta = str;
+        if (str != null)
         {
-            rta = true;
-        }
+            if (str.length() > 0)
+            {
+                String primera = String.valueOf(str.charAt(0));
+                String resto = str.substring(1);
 
+                rta = primera.toUpperCase() + resto;
+            }
+        }
         return rta;
     }
 }

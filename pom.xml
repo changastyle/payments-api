@@ -156,10 +156,47 @@
             <version>2.9.10</version>
         </dependency>
 
+        <!-- JUNIT 5: -->
         <dependency>
-            <groupId>net.minidev</groupId>
-            <artifactId>json-smart</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.1</version> <!-- Puedes ajustar la versión según la que desees utilizar -->
+            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.1</version> <!-- Puedes ajustar la versión según la que desees utilizar -->
+            <scope>test</scope>
+        </dependency>
+
+        <!-- SPRING - DEV - TOOLS: -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- H2 DATABASE FOR TESTS: -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+<!-- DEPENDENCIA PARA TEST DE REST REALES (INTEGRACION): -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

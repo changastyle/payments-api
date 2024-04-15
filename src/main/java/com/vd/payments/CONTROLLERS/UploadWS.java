@@ -3,6 +3,7 @@ package com.vd.payments.CONTROLLERS;
 import com.vd.payments.MODELO.Config;
 import com.vd.payments.MODELO.Documento;
 import com.vd.payments.REPO.DocREPO;
+import com.vd.payments.REPO.FacturaREPO;
 import com.vd.payments.UTIL.serializer.MasterUtil;
 import com.vd.payments.XCP.NoLogeadoExc;
 import io.swagger.annotations.ApiParam;
@@ -24,23 +25,58 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.Date;
-
+import com.vd.payments.MODELO.*;
+import com.vd.payments.REPO.*;
 
 @RestController
 @RequestMapping(value = "upload")
 public class UploadWS
 {
     private static DocREPO docREPO;
+    private static FacturaREPO facturaREPO;
     private static final String urlVisualizacionBackground = "up/";
 
+
     @Autowired
-    public UploadWS(DocREPO docREPO)
+    public UploadWS(DocREPO docREPO,FacturaREPO facturaREPO)
     {
         UploadWS.docREPO = docREPO;
+        UploadWS.facturaREPO = facturaREPO;
     }
 
 
 
+
+    @RequestMapping(value = "/doc/factura/{fkFactura}", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @CrossOrigin
+    @Operation(
+            summary = "Attach document to Factura",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public static Documento attachDocToFactura
+    (
+            @RequestHeader HttpHeaders headers,
+//            @RequestParam(value = "light",defaultValue = "true") boolean light,
+            @PathVariable(value ="fkFactura") int fkFactura,
+            @RequestPart("doc") @ApiParam(value = "doc", required = true) MultipartFile multiPart
+    )
+    {
+        boolean light = false;
+        Documento docAttached = uploadOnlyDoc(headers,light,multiPart);
+
+        if(fkFactura != -1)
+        {
+            Factura facturaDB = facturaREPO.getByIDN(fkFactura);
+
+            if(facturaDB != null)
+            {
+                facturaDB.addDocumento(docAttached);
+
+                facturaREPO.save(facturaDB);
+            }
+        }
+        return docAttached;
+    }
     @RequestMapping(value = "/doc/", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CrossOrigin
     @Operation(
@@ -203,12 +239,38 @@ public class UploadWS
                                         }
 
                                         System.out.println("SUBIDA CORRECTA: " + nuevoNombreFS);
+
+                                        // MUEVO EL ARCHIVO HEAVY A UNA CARPETA HEAVY:
+                                        String rutaCarpetaHeavy = "HEAVY";
+                                        int posLasSlash = nuevoNombreFullFS.lastIndexOf(File.separator);
+                                        if(posLasSlash != -1)
+                                        {
+                                            String rutaCarpetaHastaElMomento = nuevoNombreFullFS.substring(0, posLasSlash);
+                                            String rutaCarpetaHeavyFull = rutaCarpetaHastaElMomento + File.separator + rutaCarpetaHeavy;
+                                            File carpetaHeavy = new File(rutaCarpetaHeavyFull);
+
+                                            // Verificar si el archivo existe y si la carpeta destino es una carpeta
+                                            if (!carpetaHeavy.exists())
+                                            {
+                                                carpetaHeavy.mkdir();
+                                            }
+                                            File nuevoArchivo = new File(carpetaHeavy.getAbsolutePath() + File.separator + archivoYaSubido.getName());
+
+                                            // Mover el archivo utilizando el método renameTo()
+                                            if (archivoYaSubido.renameTo(nuevoArchivo))
+                                            {
+                                                System.out.println("ARCHIVO HEAVY MOVIDO A CARPETA : " + rutaCarpetaHeavy);
+                                            }
+                                        }
                                     }
+
+
                                 }
                                 else
                                 {
                                     String nuevoNombreDisco = nuevoNombreFullFS;
                                     nuevoNombreDisco = nuevoNombreDisco.replace("\\", "/");
+                                    nuevoNombreDisco = nuevoNombreDisco.replace("//", "/");
                                     int posUltimoSlash = nuevoNombreDisco.lastIndexOf("/");
                                     String nombreOnlyArchivo = nuevoNombreDisco.substring((posUltimoSlash + 1));
                                     docRTA.setUrlProv(nombreOnlyArchivo);

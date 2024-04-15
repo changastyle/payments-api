@@ -19,12 +19,18 @@ public class Instalacion implements Comparable<Instalacion>
     @OneToOne() @JoinColumn(name = "fkLogo")
     private Documento logo;
     private String urlWEB;
+    private String cbu;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "instalacion") @JsonIgnore
+    private List<Empresa> arrEmpresas;
 
     @OneToMany(cascade = CascadeType.PERSIST,mappedBy = "instalacion") @JsonIgnore
-    private List<Operador> arrOperadores;
+    private List<Producto> arrProductos;
 
-//    @OneToMany(cascade = CascadeType.PERSIST,mappedBy = "instalacion") @JsonIgnore
-//    private List<Producto> arrProductos;
+//    @OneToMany(cascade = CascadeType.ALL,mappedBy = "instalacion") @JsonIgnore
+//    private List<Operador> arrOperadores;
+
+
 
 //    @OneToMany(cascade = CascadeType.PERSIST,mappedBy = "instalacion") @JsonIgnore
 //    private List<Cliente> arrClientes;
@@ -33,7 +39,7 @@ public class Instalacion implements Comparable<Instalacion>
     public Instalacion()
     {
         logo = new Documento("default.jpg");
-        arrOperadores = new ArrayList<>();
+//        arrOperadores = new ArrayList<>();
 //        arrProductos = new ArrayList<>();
     }
 
@@ -41,5 +47,19 @@ public class Instalacion implements Comparable<Instalacion>
     {
         return 1;
     }
+
+//    public void addOperador(Operador operador)
+//    {
+//        if(arrOperadores != null)
+//        {
+//            arrOperadores = new ArrayList<>();
+//        }
+//
+//        if(operador != null)
+//        {
+////            operador.setInstalacion(this);
+//            arrOperadores.add(operador);
+//        }
+//    }
 
 }

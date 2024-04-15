@@ -24,23 +24,27 @@ import java.util.List;
 @EnableWebMvc
 @RestController
 @OpenAPIDefinition(info = @Info(title = "PAYMENTS API", version = "1.0", description = "API FOR PAYMENTS"))
-public class DelegatorAPI
+public class PaymentsAPI
 {
 
     public static Environment environment;
     public static ApplicationContext appContext;
     public static boolean MODO_DEV;
+    public static boolean DEBUG;
 
 
     public static void main(String[] args)
     {
-        SpringApplication.run(DelegatorAPI.class, args);
+        SpringApplication.run(PaymentsAPI.class, args);
 
         String puertoServer = environment.getProperty("server.port");
         MODO_DEV = Boolean.parseBoolean(String.valueOf(environment.getProperty("MODO_DEV")));
+        DEBUG = Boolean.parseBoolean(String.valueOf(environment.getProperty("DEBUG")));
 
         System.out.println("PAYMENTS API - CORRIENDO EN http://localhost:" + puertoServer);
+        System.out.println("PAYMENTS APP - CORRIENDO EN http://localhost/payments/out");
         System.out.println("PAYMENTS API - MODO-DEV: " + MODO_DEV );
+        System.out.println("PAYMENTS API - DEBUG: " + DEBUG );
 
 
 
@@ -48,9 +52,9 @@ public class DelegatorAPI
         if(SQL_INIT)
         {
 
-            String DATA_SOURCE = String.valueOf(DelegatorAPI.environment.getProperty("spring.datasource.url"));
-            String DATA_SOURCE_USER = String.valueOf(DelegatorAPI.environment.getProperty("spring.datasource.username"));
-            String DATA_SOURCE_PASS = String.valueOf(DelegatorAPI.environment.getProperty("spring.datasource.password"));
+            String DATA_SOURCE = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.url"));
+            String DATA_SOURCE_USER = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.username"));
+            String DATA_SOURCE_PASS = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.password"));
 
             if(SQL_INIT)
             {
@@ -75,9 +79,9 @@ public class DelegatorAPI
     @Autowired
     public void setearEnvironment(Environment environment)
     {
-        DelegatorAPI.environment = environment;
+        PaymentsAPI.environment = environment;
     }
-    private static String dameVariableEntorno(String nombreVariable)
+    public static String dameVariableEntorno(String nombreVariable)
     {
         return environment.getProperty(nombreVariable);
     }

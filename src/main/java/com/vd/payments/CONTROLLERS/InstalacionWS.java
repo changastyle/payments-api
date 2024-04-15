@@ -1,5 +1,6 @@
 package com.vd.payments.CONTROLLERS;
 
+import com.vd.payments.XDTO.InstalacionConEmpresas;
 import com.vd.payments.XDTO.InstalacionSaveDTO;
 import com.vd.payments.MODELO.Instalacion;
 import com.vd.payments.MODELO.Operador;
@@ -23,8 +24,9 @@ public class InstalacionWS
 
     @GetMapping("/")
     @Operation(summary = "Devuelve la instalacion del Operador Logeado" , security = @SecurityRequirement(name = "bearerAuth"))
-    public Instalacion get(@RequestHeader HttpHeaders headers)
+    public InstalacionConEmpresas get(@RequestHeader HttpHeaders headers)
     {
+        InstalacionConEmpresas instalacionConEmpresas = null;
 
         for(int i = 0 ; i < headers.size() ; i++)
         {
@@ -46,7 +48,12 @@ public class InstalacionWS
             }
         }
 
-        return instalacionDB;
+        if(instalacionDB != null)
+        {
+            instalacionConEmpresas = new InstalacionConEmpresas(instalacionDB);
+        }
+
+        return instalacionConEmpresas;
     }
 
     @PostMapping("save")

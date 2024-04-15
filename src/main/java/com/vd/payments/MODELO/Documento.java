@@ -62,4 +62,30 @@ public class Documento implements Serializable
 
         return urlFull;
     }
+    public String getPreviewDocumento()
+    {
+        String preview = "";
+        Config config = ConfigWS.dameConfigMaster();
+
+        if (config != null)
+        {
+            preview = config.getUrlVisualizacion();
+
+            if(urlProv.endsWith(".pdf"))
+            {
+                preview += "pdf.png";
+            }
+            else if(urlProv.endsWith(".doc"))
+            {
+                preview += "doc.png";
+            }
+            else
+            {
+                preview += urlProv;
+            }
+        }
+
+
+        return preview;
+    }
 }

@@ -25,6 +25,10 @@ public class Operador  implements Comparable<Operador>
     private String email;
     private String dni;
 
+//    @ManyToOne() @JoinColumn(name = "fkInstalacion") @JsonIgnore
+//    private Instalacion instalacion;
+    @ManyToOne() @JoinColumn(name = "fkEmpresa") @JsonIgnore
+    private Empresa empresa;
     @ManyToOne() @JoinColumn(name = "fkInstalacion") @JsonIgnore
     private Instalacion instalacion;
 
@@ -36,18 +40,46 @@ public class Operador  implements Comparable<Operador>
     @OneToOne() @JoinColumn(name = "fkFotoPerfil")
     private Documento fotoPerfil;
 
+    private boolean admin;
     private boolean activo;
+    @Transient
+    private boolean selected;
 
-    public int getFKConsultorioAsociado()
+    public int getFKInstalacion()
     {
-        int fkConsultorioASociado = -1;
+        int fkInstalacion = -1;
 
-        if(instalacion != null)
+        Instalacion instalacionEmpresa = getInstalacion();
+
+        if(instalacionEmpresa != null)
         {
-            fkConsultorioASociado = instalacion.getId();
+            fkInstalacion = instalacionEmpresa.getId();
         }
 
-        return fkConsultorioASociado;
+        return fkInstalacion;
+    }
+//    @JsonIgnore
+//    public Instalacion getInstalacion()
+//    {
+//        Instalacion instalacion = null;
+//
+//        if(empresa != null)
+//        {
+//            instalacion = empresa.getInstalacion();
+//        }
+//
+//        return instalacion;
+//    }
+    public int getFKEmpresa()
+    {
+        int fkEmpresa = -1;
+
+        if(empresa != null)
+        {
+            fkEmpresa = empresa.getId();
+        }
+
+        return fkEmpresa;
     }
     public int compareTo(Operador otro)
     {

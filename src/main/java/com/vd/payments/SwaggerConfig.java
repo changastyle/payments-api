@@ -60,8 +60,8 @@ public class SwaggerConfig implements WebMvcConfigurer
     @Bean
     public GroupedOpenApi config() {
         return GroupedOpenApi.builder()
-                .group("CONFIG")
-                .displayName("CONFIG")
+                .group("X-CONFIG")
+                .displayName("X-CONFIG")
                 .pathsToMatch("/config/**")
                 .build();
     }
@@ -74,11 +74,19 @@ public class SwaggerConfig implements WebMvcConfigurer
                 .build();
     }
     @Bean
-    public GroupedOpenApi upload2() {
+    public GroupedOpenApi empresa() {
         return GroupedOpenApi.builder()
-                .group("UPLOAD2")
-                .displayName("UPLOAD2")
-                .pathsToMatch("/upload2/**")
+                .group("EMPRESA")
+                .displayName("EMPRESA")
+                .pathsToMatch("/empresa/**" , "/suscripcion/**" , "/pago/**" , "/producto/**")
+                .build();
+    }
+    @Bean
+    public GroupedOpenApi facturas() {
+        return GroupedOpenApi.builder()
+                .group("FACTURAS")
+                .displayName("FACTURAS")
+                .pathsToMatch("/factura/**","/estados/**")
                 .build();
     }
 
@@ -90,6 +98,14 @@ public class SwaggerConfig implements WebMvcConfigurer
                 .pathsToMatch("/rol/**","/operador/**")
                 .build();
     }
+//    @Bean
+//    public GroupedOpenApi invoices() {
+//        return GroupedOpenApi.builder()
+//                .group("INVOICES")
+//                .displayName("INVOICES")
+//                .pathsToMatch("/factura/**","/invoice/**","/suscripcion/**")
+//                .build();
+//    }
 
     private ApiKey apiKey()
     {
@@ -105,7 +121,7 @@ public class SwaggerConfig implements WebMvcConfigurer
         AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
-        return Arrays.asList(new SecurityReference("JWT", authorizationScopes));
+        return List.of(new SecurityReference("JWT", authorizationScopes));
     }
 
     @Override

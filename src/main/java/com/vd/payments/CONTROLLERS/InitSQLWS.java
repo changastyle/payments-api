@@ -1,36 +1,54 @@
-package com.vd.payments.UTIL;
+package com.vd.payments.CONTROLLERS;
 
 import com.vd.payments.PaymentsAPI;
 import com.vd.payments.UTIL.serializer.MasterUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.sql.PreparedStatement;
 
-public class LeerArchivoSQL
+@RestController
+@RequestMapping(value = "sql")
+@CrossOrigin
+public class InitSQLWS
 {
-    public static void main(String args[])
+
+    @GetMapping(value = "/init/{pass}")
+    @Operation(summary = "Inicializa cosas comunes en SQL")
+    public int init
+    (
+            @PathVariable() String pass
+    )
     {
-        String rutaSQLInit = "src/main/resources/INIT.SQL";
-        System.out.println("LEYENDO ARCHIVO:");
-
-        List<String> arrLineasSQL = MasterUtil.readLinesOfSQLFile(rutaSQLInit,true);
-        System.out.println("ARR LINEAS: " + arrLineasSQL.size());
-
-        int contador = 0;
-        for(String lineaLoop : arrLineasSQL)
+        int lineasAfectadasTotales = 0;
+        if(pass.equalsIgnoreCase("lupita"))
         {
-            System.out.println(contador + ")" + lineaLoop );
+                String rutaSQLInit = "src/main/resources/INIT.SQL";
+                System.out.println("LEYENDO ARCHIVO:");
 
-            int lineasAfectadas = executeSQL(lineaLoop);
-            System.out.println("LINEAS AFECTADAS: " + lineasAfectadas);
+                List<String> arrLineasSQL = MasterUtil.readLinesOfSQLFile(rutaSQLInit,true);
+                System.out.println("ARR LINEAS: " + arrLineasSQL.size());
 
-            contador++;
+                int contador = 0;
+                for(String lineaLoop : arrLineasSQL)
+                {
+                    System.out.println(contador + ")" + lineaLoop );
+
+                    int lineasAfectadas = executeSQL(lineaLoop , true);
+                    lineasAfectadasTotales += lineasAfectadas;
+                    System.out.println("LINEAS AFECTADAS: " + lineasAfectadas);
+
+                    contador++;
+                }
         }
+
+        return lineasAfectadasTotales;
     }
-    public static int executeSQL(String sql)
+    private int executeSQL(String sql, boolean enH2)
     {
         int filasAfectadas = 0;
         Connection connection = null;
@@ -41,14 +59,16 @@ public class LeerArchivoSQL
             String PW = PaymentsAPI.dameVariableEntorno("MYSQL_PW");
             System.out.println("USER : " + USER);
             System.out.println("PW : " + PW);
-            connection = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "password");
-            // Establece la conexión a la base de datos MySQL (cambia la URL, usuario y contraseña según tus configuraciones)
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/tu_basedatos", "tu_usuario", "tu_contraseña");
 
+            if(enH2)
+            {
+                connection = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "password");
+            }
+            else
+            {
+                connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/payments", USER, PW);
 
-            // Define la consulta SQL que deseas ejecutar
-//            String sqlQuery = "INSERT INTO tu_tabla (columna1, columna2) VALUES (?, ?)";
-
+            }
             // Prepara la declaración SQL con parámetros
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
             {
