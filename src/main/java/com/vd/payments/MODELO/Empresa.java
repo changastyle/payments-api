@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Table(name = "empresas" )
+@Table(name = "empresas")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,14 +23,21 @@ public class Empresa
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String nombre;
+    private String cuit;
+    private String emailContacto;
+    private String direccionContacto;
+    private String telefonoContacto;
 
-    @ManyToOne() @JoinColumn(name = "fkInstalacion") @JsonIgnore
+    @ManyToOne()
+    @JoinColumn(name = "fkInstalacion")
+    @JsonIgnore
     private Instalacion instalacion;
 
-    @OneToOne() @JoinColumn(name = "fkLogo")
+    @OneToOne()
+    @JoinColumn(name = "fkLogo")
     private Documento logo;
 
-//    @OneToMany(mappedBy = "empresa")
+    //    @OneToMany(mappedBy = "empresa")
 //    private List<Operador> arrEmpleados;
     private boolean activo;
 
@@ -39,7 +46,7 @@ public class Empresa
     {
         int fkInstalacion = -1;
 
-        if(instalacion != null)
+        if (instalacion != null)
         {
             fkInstalacion = instalacion.getId();
         }

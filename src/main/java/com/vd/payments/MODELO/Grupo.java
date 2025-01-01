@@ -24,7 +24,7 @@ public class Grupo implements Comparable<Grupo>
     boolean activo;
     public Grupo()
     {
-        logo = new Documento("default.jpg");
+        logo = new Documento("default.jpg" , instalacion);
     }
 
     public int compareTo(Grupo otro)

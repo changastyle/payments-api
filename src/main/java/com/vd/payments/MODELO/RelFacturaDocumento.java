@@ -27,5 +27,16 @@ public class RelFacturaDocumento
     @OneToOne() @JoinColumn(name = "fkDocumento")
     private Documento documento;
     private LocalDateTime fechaUP;
-    private boolean activo;
+
+    public boolean isActivo()
+    {
+        boolean activo = false;
+
+        if(documento != null)
+        {
+            activo = documento.isActivo();
+        }
+
+        return activo;
+    }
 }

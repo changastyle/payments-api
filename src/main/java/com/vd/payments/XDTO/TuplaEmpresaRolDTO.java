@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TuplaEmpresaRolDTO
 {
     public Operador operador;
@@ -21,7 +23,7 @@ public class TuplaEmpresaRolDTO
 
     public void addEmpresa(Empresa empresa)
     {
-        if(arrEmpresas == null)
+        if (arrEmpresas == null)
         {
             arrEmpresas = new ArrayList<>();
         }
@@ -29,11 +31,11 @@ public class TuplaEmpresaRolDTO
         arrEmpresas.add(empresa);
     }
 
-    public  int getFkInstalacion()
+    public int getFkInstalacion()
     {
         int fkInstalacion = -1;
 
-        if(instalacion != null)
+        if (instalacion != null)
         {
             fkInstalacion = instalacion.getId();
         }
@@ -45,20 +47,21 @@ public class TuplaEmpresaRolDTO
     {
         boolean adminLevel = false;
 
-        if(operador != null)
+        if (operador != null)
         {
             adminLevel = operador.isAdmin();
         }
 
         return adminLevel;
     }
+
     public Empresa getEmpresaPrincipal()
     {
         Empresa empresaPrincipal = null;
 
-        if(arrEmpresas != null)
+        if (arrEmpresas != null)
         {
-            if(arrEmpresas.size() > 0)
+            if (arrEmpresas.size() > 0)
             {
                 empresaPrincipal = arrEmpresas.get(0);
             }
@@ -67,18 +70,29 @@ public class TuplaEmpresaRolDTO
 
         return empresaPrincipal;
     }
+
     public int getFKEmpresaPrincipal()
     {
         int fkEmpresaPrincipal = -1;
         Empresa empresaPrincipal = getEmpresaPrincipal();
 
-        if(empresaPrincipal != null)
+        if (empresaPrincipal != null)
         {
             fkEmpresaPrincipal = empresaPrincipal.getId();
         }
 
 
         return fkEmpresaPrincipal;
+    }
+
+    public String getEmailOperador()
+    {
+        String emailOperador = "";
+        if (operador != null)
+        {
+            emailOperador = operador.getEmail();
+        }
+        return emailOperador;
     }
 
 }

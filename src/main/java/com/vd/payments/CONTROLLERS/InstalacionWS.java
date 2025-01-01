@@ -57,7 +57,7 @@ public class InstalacionWS
     }
 
     @PostMapping("save")
-    public Instalacion save(@RequestBody InstalacionSaveDTO instalacionSaveDTO)
+    public Instalacion save(@RequestBody InstalacionSaveDTO instalacionSaveDTO , @RequestHeader HttpHeaders headers)
     {
         Instalacion instalacionNew = null;
 
@@ -65,7 +65,7 @@ public class InstalacionWS
         {
             instalacionNew = (Instalacion) instalacionSaveDTO.toEntity(Instalacion.class);
 
-            instalacionNew.setLogo(DocWS.porDefecto());
+            instalacionNew.setLogo(DocWS.porDefecto(headers));
 
             instalacionNew = instalacionRepo.save(instalacionNew);
 

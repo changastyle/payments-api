@@ -20,7 +20,7 @@ public class DetFactura
     private double cantidad;
     @OneToOne() @JoinColumn(name = "fkProducto")
     private Producto producto;
-    private double importeDetalleFijo;
+    private double importeDetalleUnitario;
     @ManyToOne() @JoinColumn(name = "fkFactura") @JsonIgnore
     private Factura facturaPadre;
     private boolean activo;
@@ -29,7 +29,7 @@ public class DetFactura
     {
         this.cantidad = cantidad;
         this.producto = producto;
-        this.importeDetalleFijo = importeDetalleFijo;
+        this.importeDetalleUnitario = importeDetalleFijo;
         this.facturaPadre = facturaPadre;
         this.activo = activo;
     }
@@ -39,11 +39,11 @@ public class DetFactura
         double rta = 0;
         double totalCalculado = 0;
 
-        totalCalculado = cantidad * producto.getPrecio();
+        totalCalculado = cantidad * producto.getPrecioSugerido();
 
-        if(importeDetalleFijo > totalCalculado)
+        if(importeDetalleUnitario > totalCalculado)
         {
-            rta = importeDetalleFijo;
+            rta = importeDetalleUnitario;
         }
         else
         {

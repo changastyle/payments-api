@@ -1,6 +1,7 @@
 package com.vd.payments.CONTROLLERS;
 
 import com.vd.payments.MODELO.Documento;
+import com.vd.payments.MODELO.Operador;
 import com.vd.payments.REPO.DocREPO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -46,18 +47,23 @@ public class DocWS
         }
 
         @GetMapping("/default")
-        public static  Documento porDefecto()
+        public static  Documento porDefecto(@RequestHeader HttpHeaders headers)
         {
             Documento docRTA = null;
             Documento docDB = docREPO.getById(1);
 
-            if(docDB == null)
+            Operador operadorLogeado = LoginWS.dameOperadorLogeado(headers);
+            if(operadorLogeado != null)
             {
-                docDB = new Documento("default.jpg");
-                docDB = docREPO.save(docDB);
+                if(docDB == null)
+                {
+                    docDB = new Documento("default.jpg" , operadorLogeado.getInstalacion());
+                    docDB = docREPO.save(docDB);
+                }
+
+                docRTA = docDB;
             }
 
-            docRTA = docDB;
 
             return docRTA;
         }

@@ -40,31 +40,30 @@ public class PaymentsAPI
         String puertoServer = environment.getProperty("server.port");
         MODO_DEV = Boolean.parseBoolean(String.valueOf(environment.getProperty("MODO_DEV")));
         DEBUG = Boolean.parseBoolean(String.valueOf(environment.getProperty("DEBUG")));
+        String DATA_SOURCE = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.url"));
 
         System.out.println("PAYMENTS API - CORRIENDO EN http://localhost:" + puertoServer);
         System.out.println("PAYMENTS APP - CORRIENDO EN http://localhost/payments/out");
-        System.out.println("PAYMENTS API - MODO-DEV: " + MODO_DEV );
-        System.out.println("PAYMENTS API - DEBUG: " + DEBUG );
+        System.out.println("PAYMENTS API - MODO-DEV: " + MODO_DEV);
+        System.out.println("PAYMENTS API - DEBUG: " + DEBUG);
+        System.out.println("PAYMENTS API - DATASOURCE : " + DATA_SOURCE);
 
 
-
-        boolean SQL_INIT = MasterUtil.leerArgumentosProgramaAsBoolean(args);
-        if(SQL_INIT)
+//        boolean SQL_INIT = MasterUtil.leerArgumentosProgramaAsBoolean(args);
+        boolean SQL_INIT = false;
+        if (SQL_INIT)
         {
 
-            String DATA_SOURCE = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.url"));
             String DATA_SOURCE_USER = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.username"));
             String DATA_SOURCE_PASS = String.valueOf(PaymentsAPI.environment.getProperty("spring.datasource.password"));
 
-            if(SQL_INIT)
+            if (SQL_INIT)
             {
                 System.out.println("SQL INIT:" + SQL_INIT);
-                runInitSQLFile(DATA_SOURCE , DATA_SOURCE_USER,DATA_SOURCE_PASS);
+                runInitSQLFile(DATA_SOURCE, DATA_SOURCE_USER, DATA_SOURCE_PASS);
             }
         }
     }
-
-
 
 
     @GetMapping(value = "/")
@@ -81,26 +80,27 @@ public class PaymentsAPI
     {
         PaymentsAPI.environment = environment;
     }
+
     public static String dameVariableEntorno(String nombreVariable)
     {
         return environment.getProperty(nombreVariable);
     }
 
 
-    public static int runInitSQLFile(String dataSource, String dataSourceUser , String dataSourcePass)
+    public static int runInitSQLFile(String dataSource, String dataSourceUser, String dataSourcePass)
     {
 
 
-        if(dataSource == null)
+        if (dataSource == null)
         {
-            dataSource="jdbc:h2:mem:challenge;DB_CLOSE_ON_EXIT=FALSE";
-            dataSourceUser="sa";
-            dataSourcePass="password";
+            dataSource = "jdbc:h2:mem:challenge;DB_CLOSE_ON_EXIT=FALSE";
+            dataSourceUser = "sa";
+            dataSourcePass = "password";
         }
 
         String sqlFilePath = "src/main/resources/INIT.SQL";
 
-        System.out.println("IMPORTING SQL FILE: [" + sqlFilePath +"]");
+        System.out.println("IMPORTING SQL FILE: [" + sqlFilePath + "]");
 
         int rowsAffected = 0;
         try
@@ -109,10 +109,10 @@ public class PaymentsAPI
             Connection connection = DriverManager.getConnection(dataSource, dataSourceUser, dataSourcePass);
             Statement statement = connection.createStatement();
 
-            for(String sqlLoop : arrSQL)
+            for (String sqlLoop : arrSQL)
             {
                 rowsAffected += statement.executeUpdate(sqlLoop);
-                System.out.println("EXECUTING SQL(" + rowsAffected +"): " + sqlLoop);
+                System.out.println("EXECUTING SQL(" + rowsAffected + "): " + sqlLoop);
             }
 
             statement.close();

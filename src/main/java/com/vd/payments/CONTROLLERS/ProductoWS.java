@@ -153,7 +153,7 @@ public class ProductoWS
 
                 if(!cargueFoto)
                 {
-                    Documento fotoDefault = DocWS.porDefecto();
+                    Documento fotoDefault = DocWS.porDefecto(headers);
 
                     if(fotoDefault != null)
                     {

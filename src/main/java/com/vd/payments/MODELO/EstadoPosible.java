@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "estados_posibles")
 @Data
@@ -25,10 +27,14 @@ public class EstadoPosible
     private String color;
     private String icono;
 
-    @OneToOne() @JoinColumn(name = "fkEstadoNegativo") @JsonIgnore
+    @OneToOne()
+    @JoinColumn(name = "fkEstadoNegativo")
+    @JsonIgnore
     private EstadoPosible estadoNegativo;
 
-    @OneToOne() @JoinColumn(name = "fkEstadoProximoPositivo") @JsonIgnore
+    @OneToOne()
+    @JoinColumn(name = "fkEstadoProximoPositivo")
+    @JsonIgnore
     private EstadoPosible estadoProximoPositivo;
 
     private boolean activo;
@@ -36,20 +42,27 @@ public class EstadoPosible
     public String getNombreEstadoNegativo()
     {
         String nombreEstadoAnt = "";
-        if(estadoNegativo != null)
+        if (estadoNegativo != null)
         {
             nombreEstadoAnt = estadoNegativo.getNombre();
         }
-        return  nombreEstadoAnt;
+        return nombreEstadoAnt;
     }
+
     public String getNombreEstadoProx()
     {
         String nombreEstadoAnt = "";
-        if(estadoProximoPositivo != null)
+        if (estadoProximoPositivo != null)
         {
             nombreEstadoAnt = estadoProximoPositivo.getNombre();
         }
-        return  nombreEstadoAnt;
+        return nombreEstadoAnt;
     }
 
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.getColor());
+    }
 }

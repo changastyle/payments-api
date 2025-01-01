@@ -1,13 +1,18 @@
 package com.vd.payments.CONTROLLERS;
 
+import com.vd.payments.MODELO.Documento;
 import com.vd.payments.MODELO.Empresa;
 import com.vd.payments.MODELO.Operador;
 import com.vd.payments.MODELO.Suscripcion;
+import com.vd.payments.REPO.DocREPO;
 import com.vd.payments.REPO.EmpresaRepo;
 import com.vd.payments.REPO.OperadorREPO;
 import com.vd.payments.REPO.SuscripcionREPO;
+import com.vd.payments.XCP.CustomException;
 import com.vd.payments.XCP.NoLogeadoExc;
+import com.vd.payments.XCP.NotAllowedException;
 import com.vd.payments.XCP.NotFoundExc;
+import com.vd.payments.XDTO.TuplaEmpresaRolDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +34,8 @@ public class EmpresaWS
     private OperadorREPO operadorREPO;
     @Autowired
     private SuscripcionREPO relProductoEmpresaREPO;
+    @Autowired
+    private DocREPO docREPO;
 //    @Autowired
 //    private RelEmpresaEmpleadoREPO relEmpresaEmpleadoREPO;
 
@@ -46,7 +53,8 @@ public class EmpresaWS
         if (fkInstalacion != -1)
         {
             arrEmpresas = empresaREPO.findAllByFKInstalacion(fkInstalacion);
-        } else
+        }
+        else
         {
             throw new NotFoundExc("No hay empresa asociada el operador logeado");
         }
@@ -77,7 +85,8 @@ public class EmpresaWS
             {
                 throw new NotFoundExc("NO EXISTE EMPRESA CON ID: " + id);
             }
-        } else
+        }
+        else
         {
             throw new NoLogeadoExc("USUARIO NO LOGEADO");
         }
@@ -85,6 +94,63 @@ public class EmpresaWS
         return clienteDB;
     }
 
+    @PatchMapping(value = "/logo/attach/{fkEmpresa}/{fkDocumento}")
+    @Operation(
+            summary = "Cambia el logo de una empresa, solo el (ADMIN) puede hacer esto",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public Empresa changeLogoEmpresa
+            (
+                    @PathVariable(value = "fkEmpresa") int fkEmpresa,
+                    @PathVariable(value = "fkDocumento") int fkDocumento,
+                    @RequestHeader HttpHeaders headers
+            )
+    {
+        Operador operadorLogeado = LoginWS.dameOperadorLogeado(headers);
+        Empresa empresaDB = null;
+
+        if (operadorLogeado != null)
+        {
+            if (operadorLogeado.isAdmin())
+            {
+                if (fkDocumento != -1 && fkEmpresa != -1)
+                {
+                    empresaDB = empresaREPO.getByIDN(fkEmpresa);
+                    if (empresaDB != null)
+                    {
+                        Documento documentoDB = docREPO.getByIDN(fkDocumento);
+                        if (documentoDB != null)
+                        {
+                            empresaDB.setLogo(documentoDB);
+                            empresaREPO.save(empresaDB);
+                        }
+                        else
+                        {
+                            throw new NotFoundExc("NO SE HA ENCONTRADO DOCUMENTO CON ID: " + fkDocumento);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotFoundExc("NO SE HA ENCONTRADO EMPRESA CON ID: " + fkEmpresa);
+                    }
+                }
+                else
+                {
+                    throw new CustomException("FK EMPRESA == " + fkEmpresa + " | FK DOCUMENTO: " + fkDocumento);
+                }
+            }
+            else
+            {
+                throw new NotAllowedException("NO ERES ADMIN, NO PUEDES REALIZAR ESTA OPERACION");
+            }
+        }
+        else
+        {
+            throw new NoLogeadoExc("NO HAY OPERADOR LOGEADO");
+        }
+
+        return empresaDB;
+    }
 
     //    @PostMapping(value = "relOperador/search/")
 //    @CrossOrigin
@@ -141,7 +207,8 @@ public class EmpresaWS
             {
                 arrOperadores = operadorREPO.findOperadorPorEmpresa(fkEmpresa);
             }
-        } else
+        }
+        else
         {
             throw new NoLogeadoExc("NO HAY OPERADOR LOGEADO");
         }
@@ -155,11 +222,11 @@ public class EmpresaWS
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public Operador rmColaboradorEmail
-    (
-            @PathVariable() int fkEmpresa,
-            @RequestParam(name = "emailColaborador") String emailColaborador,
-            @RequestHeader HttpHeaders headers
-    )
+            (
+                    @PathVariable() int fkEmpresa,
+                    @RequestParam(name = "emailColaborador") String emailColaborador,
+                    @RequestHeader HttpHeaders headers
+            )
     {
         Operador operadorDEL = null;
         if (emailColaborador != null && emailColaborador.length() > 0)
@@ -174,7 +241,8 @@ public class EmpresaWS
         }
         return operadorDEL;
     }
-//    {
+
+    //    {
 //        RelEmpresaEmpleado relNew = null;
 //        Cliente empresaDB = empresaREPO.getByIDN(fkEmpresa);
 //        Operador colaboradorDB = operadorREPO.getOperadorByEmail(emailColaborador);
@@ -259,10 +327,10 @@ public class EmpresaWS
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public List<Operador> findAllMenosYaCargadosEnEmpresa
-    (
-            @PathVariable() int fkEmpresa,
-            @RequestHeader HttpHeaders headers
-    )
+            (
+                    @PathVariable() int fkEmpresa,
+                    @RequestHeader HttpHeaders headers
+            )
     {
         int fkInstalacion = LoginWS.getFKInstalacionOperadorLogeado(headers);
 
@@ -271,17 +339,17 @@ public class EmpresaWS
 
         System.out.println("Operadores Instalacion(" + arrAllOperadoresInstalacion.size() + ")");
         int i = 0;
-        for(Operador operadorInstalacion : arrAllOperadoresInstalacion)
+        for (Operador operadorInstalacion : arrAllOperadoresInstalacion)
         {
-            System.out.println( i + ")" + operadorInstalacion.getApellido() + "," + operadorInstalacion.getNombre());
+            System.out.println(i + ")" + operadorInstalacion.getApellido() + "," + operadorInstalacion.getNombre());
             i++;
         }
         System.out.println("----------");
         System.out.println("Operadores Empresa(" + arrAllOperadoresEmpresa.size() + ")");
         int f = 0;
-        for(Operador operadorEmpresa : arrAllOperadoresEmpresa)
+        for (Operador operadorEmpresa : arrAllOperadoresEmpresa)
         {
-            System.out.println( f + ")" + operadorEmpresa.getApellido() + "," + operadorEmpresa.getNombre());
+            System.out.println(f + ")" + operadorEmpresa.getApellido() + "," + operadorEmpresa.getNombre());
             f++;
         }
 
@@ -294,7 +362,7 @@ public class EmpresaWS
 //                .filter(instalacionOperador -> !arrAllOperadoresEmpresa.contains(instalacionOperador))
 //                .collect(Collectors.toList());
 
-        if(operadoresNoEnEmpresa == null)
+        if (operadoresNoEnEmpresa == null)
         {
             operadoresNoEnEmpresa = new ArrayList<>();
         }
@@ -329,19 +397,23 @@ public class EmpresaWS
                         operadorDB.setEmpresa(empresaDB);
 
                         operadorDB = operadorREPO.save(operadorDB);
-                    } else
+                    }
+                    else
                     {
                         throw new NotFoundExc("Colaborador not found: " + emailOperador);
                     }
-                } else
+                }
+                else
                 {
                     throw new NotFoundExc("Empresa not found: " + fkEmpresa);
                 }
-            } else
+            }
+            else
             {
                 throw new NotFoundExc("Empresa no puede ser editada por un operador externo");
             }
-        } else
+        }
+        else
         {
             throw new NoLogeadoExc("Operador No Logeado");
         }
@@ -350,9 +422,6 @@ public class EmpresaWS
         return operadorDB;
     }
     //</editor-fold>
-
-
-
 
 
 }

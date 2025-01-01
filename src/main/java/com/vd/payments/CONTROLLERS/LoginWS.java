@@ -136,7 +136,8 @@ public class LoginWS
         {
             if (PaymentsAPI.MODO_DEV)
             {
-                operadorLogedoDB = getOperadorByID(headers, 1);
+                operadorLogedoDB = getOperadorByID(headers, 8);
+//                operadorLogedoDB = getOperadorByID(headers, 1);
             }
         }
 
@@ -211,7 +212,7 @@ public class LoginWS
 
                 if (PaymentsAPI.DEBUG)
                 {
-                    System.out.println("HEADERS:" + headers.toString());
+                    System.out.println("HEADERS:" + headers);
                 }
 
                 if (arrStrTokens != null)
@@ -223,7 +224,7 @@ public class LoginWS
                         String bearer = "Bearer ";
                         if (token.startsWith(bearer))
                         {
-                            token = token.substring(bearer.length(), token.length());
+                            token = token.substring(bearer.length());
 
                         }
 
@@ -340,7 +341,7 @@ public class LoginWS
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
         String[] chunks = token.split("\\.");
-        List<String> arrChunks = Arrays.asList(chunks);
+        String[] arrChunks = chunks;
         for (String chunkLoop : arrChunks)
         {
             if (PaymentsAPI.DEBUG)
@@ -557,7 +558,7 @@ public class LoginWS
                         {
 //                            operadorNew.setInstalacion(instalacionDB);
 
-                            Documento fotoDefault = DocWS.porDefecto();
+                            Documento fotoDefault = DocWS.porDefecto(headers);
                             operadorNew.setFotoPerfil(fotoDefault);
 
                             String strSexo = "Femenino";

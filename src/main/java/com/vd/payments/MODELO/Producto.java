@@ -24,7 +24,7 @@ public class Producto
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String nombre;
-    private double precio;
+    private double precioSugerido;
 
     @OneToOne() @JoinColumn(name = "fkFoto")
     private Documento foto;

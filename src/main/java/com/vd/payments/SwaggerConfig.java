@@ -22,9 +22,9 @@ import java.util.List;
 
 @Configuration
 @OpenAPIDefinition
-(
-        info=@Info(title="Payments API")
-)
+        (
+                info = @Info(title = "Payments API")
+        )
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
@@ -50,52 +50,72 @@ public class SwaggerConfig implements WebMvcConfigurer
     }
 
     @Bean
-    public GroupedOpenApi defaul() {
+    public GroupedOpenApi defaul()
+    {
         return GroupedOpenApi.builder()
                 .group("DEFAULT")
                 .displayName("DEFAULT")
                 .pathsToMatch("/**")
                 .build();
     }
+
     @Bean
-    public GroupedOpenApi config() {
+    public GroupedOpenApi pdf()
+    {
+        return GroupedOpenApi.builder()
+                .group("PDF")
+                .displayName("PDF")
+                .pathsToMatch("/pdf/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi config()
+    {
         return GroupedOpenApi.builder()
                 .group("X-CONFIG")
                 .displayName("X-CONFIG")
                 .pathsToMatch("/config/**")
                 .build();
     }
+
     @Bean
-    public GroupedOpenApi upload() {
+    public GroupedOpenApi upload()
+    {
         return GroupedOpenApi.builder()
                 .group("UPLOAD")
                 .displayName("UPLOAD")
                 .pathsToMatch("/upload/**")
                 .build();
     }
+
     @Bean
-    public GroupedOpenApi empresa() {
+    public GroupedOpenApi empresa()
+    {
         return GroupedOpenApi.builder()
                 .group("EMPRESA")
                 .displayName("EMPRESA")
-                .pathsToMatch("/empresa/**" , "/suscripcion/**" , "/pago/**" , "/producto/**")
-                .build();
-    }
-    @Bean
-    public GroupedOpenApi facturas() {
-        return GroupedOpenApi.builder()
-                .group("FACTURAS")
-                .displayName("FACTURAS")
-                .pathsToMatch("/factura/**","/estados/**")
+                .pathsToMatch("/empresa/**", "/suscripcion/**", "/pago/**", "/producto/**")
                 .build();
     }
 
     @Bean
-    public GroupedOpenApi publicApi() {
+    public GroupedOpenApi facturas()
+    {
+        return GroupedOpenApi.builder()
+                .group("FACTURAS")
+                .displayName("FACTURAS")
+                .pathsToMatch("/factura/**", "/estados/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi publicApi()
+    {
         return GroupedOpenApi.builder()
                 .group("LOGIN")
                 .displayName("LOGIN")
-                .pathsToMatch("/rol/**","/operador/**")
+                .pathsToMatch("/rol/**", "/operador/**")
                 .build();
     }
 //    @Bean
@@ -111,6 +131,7 @@ public class SwaggerConfig implements WebMvcConfigurer
     {
         return new ApiKey("JWT", "Authorization", "header");
     }
+
     private SecurityContext securityContext()
     {
         return SecurityContext.builder().securityReferences(defaultAuth()).build();
@@ -148,6 +169,7 @@ public class SwaggerConfig implements WebMvcConfigurer
                 new Contact("Nicolas Grossi", "www.viewdevs.com.ar", "viewdevscompany@gmail.com"),
                 "License of API",
                 "API license URL",
-                Collections.emptyList());
+                Collections.emptyList()
+        );
     }
 }

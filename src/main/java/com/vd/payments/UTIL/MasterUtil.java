@@ -94,6 +94,22 @@ public class MasterUtil
         return ldt;
     }
 
+    public static String obtenerMes(int numeroMes)
+    {
+        String strMes = "";
+
+        String[] meses = {
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+
+        if (numeroMes >= 0 && numeroMes <= 11)
+        {
+            strMes = meses[numeroMes];  // Restar 1 porque los índices del array empiezan en 0
+        }
+        return strMes;
+    }
+
     public static String formatearLDTForFiles(LocalDateTime ldt)
     {
         String rta = "";
@@ -183,6 +199,11 @@ public class MasterUtil
         }
 
         return rta;
+    }
+
+    public static String rellenarConCeros(int numero, int cantZeros)
+    {
+        return String.format("%0" + cantZeros + "d", numero);
     }
 
     public static String generarCodigoAleatorio(int cantDigitos)

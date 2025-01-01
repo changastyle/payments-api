@@ -2,13 +2,17 @@ package com.vd.payments.CONTROLLERS;
 
 import com.vd.payments.MODELO.*;
 import com.vd.payments.REPO.*;
+import com.vd.payments.UTIL.serializer.MasterUtil;
+import com.vd.payments.XCP.CustomException;
 import com.vd.payments.XCP.NoLogeadoExc;
 import com.vd.payments.XCP.NotAllowedException;
 import com.vd.payments.XCP.NotFoundExc;
 import com.vd.payments.XDTO.FacturaSaveDTO;
+import com.vd.payments.XDTO.ResumenCuenta;
 import com.vd.payments.XDTO.TuplaEmpresaRolDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +35,8 @@ public class FacturaWS
     private EmpresaRepo empresaRepo;
     @Autowired
     private CambioEstadoWS cambioEstadoWS;
+    @Autowired
+    private InstalacionRepo instalacionRepo;
 
 
     @PostMapping(value = "/")
@@ -43,69 +49,69 @@ public class FacturaWS
         Factura facturaNva = null;
 
         TuplaEmpresaRolDTO tupla = LoginWS.dameTuplaOperadorLogeado(headers);
-        if(tupla != null)
+        if (tupla != null)
         {
             int fkEmpresa = 0;
+
             Operador operadorLogeado = null;
             if (tupla.getAdminOfOperador())
             {
                 fkEmpresa = facturaSaveDTO.fkEmpresa;
                 Empresa empresaDB = empresaRepo.getByIDN(fkEmpresa);
                 operadorLogeado = tupla.getOperador();
+                Instalacion instalacionDB = tupla.getInstalacion();
 
-                if (empresaDB != null)
+                if (instalacionDB != null)
                 {
-                    if (operadorLogeado != null)
+                    if (empresaDB != null)
                     {
-                        facturaNva = new Factura();
-
-                        LocalDateTime ahora = LocalDateTime.now();
-                        int mes = facturaSaveDTO.mesFactura;
-                        int year = facturaSaveDTO.yearFactura;
-                        int precio = facturaSaveDTO.precio;
-
-                        facturaNva.setEmpresa(empresaDB);
-                        facturaNva.setFechaEmision(ahora);
-                        facturaNva.setMes(String.valueOf(mes));
-                        facturaNva.setYear(String.valueOf(year));
-                        facturaNva.setActivo(true);
-
-                        Producto productoDB = productoREPO.getByIDN(facturaSaveDTO.fkProducto, tupla.getFkInstalacion());
-
-                        if (productoDB != null)
+                        if (operadorLogeado != null)
                         {
-                            DetFactura detFactura = new DetFactura(facturaSaveDTO.cantidad, productoDB, precio, facturaNva, true);
+                            facturaNva = new Factura();
 
-                            // 1 - ADD DETALLE FACTURA:
-                            facturaNva.addDetFactura(detFactura);
+                            LocalDateTime ahora = LocalDateTime.now();
+                            int mes = facturaSaveDTO.mesFactura;
+                            int year = facturaSaveDTO.yearFactura;
+                            int nextSeqFact = instalacionDB.getSeqFactInt() + 1;
+                            String nextSeqFactWithZeros = MasterUtil.rellenarConCeros(nextSeqFact, 8);
+//                            int precio = facturaSaveDTO.precio;
+
+                            facturaNva.setSeqFact(nextSeqFact);
+                            facturaNva.setEmpresa(empresaDB);
+                            facturaNva.setFechaEmision(ahora);
+                            facturaNva.setMes(String.valueOf(mes));
+                            facturaNva.setYear(String.valueOf(year));
+                            facturaNva.setActivo(true);
 
                             // 2 - ADD CAMBIO ESTADO:
                             EstadoPosible estadoDefault = cambioEstadoWS.getEstadoDefault(headers);
                             CambioEstado cambioEstadoInicial = new CambioEstado(facturaNva, operadorLogeado, estadoDefault, estadoDefault);
                             facturaNva.addCambioEstado(cambioEstadoInicial);
+                            facturaNva.setInstalacion(instalacionDB);
 
                             // 3 - SAVE FACTURA:
                             facturaNva = facturaREPO.save(facturaNva);
+                            instalacionDB.setSeqFact(nextSeqFactWithZeros);
+                            instalacionRepo.save(instalacionDB);
                         }
                         else
                         {
-                            throw new NotFoundExc("PRODUCTO NOT FOUND WITH ID [" + facturaSaveDTO.fkProducto + "] FOR EMPRESA : " + fkEmpresa);
-
+                            throw new NotFoundExc("OPERADOR LOGEADO NOT FOUND : " + operadorLogeado.getEmail());
                         }
                     }
                     else
                     {
-                        throw new NotFoundExc("OPERADOR LOGEADO NOT FOUND : " + operadorLogeado.getEmail());
+                        throw new NotFoundExc("EMPRESA NOT FOUND WITH ID : " + fkEmpresa);
                     }
                 }
                 else
                 {
-                    throw new NotFoundExc("EMPRESA NOT FOUND WITH ID : " + fkEmpresa);
+                    throw new NotFoundExc("Instalacion NOT FOUND : " + tupla.getFkInstalacion());
                 }
             }
             else
             {
-                throw new NotAllowedException("OPERADDR IS NOT ADMIN : " + operadorLogeado.getEmail() + " - " + tupla.getAdminOfOperador());
+                throw new NotAllowedException("OPERADDR IS NOT ADMIN : " + tupla.getEmailOperador() + " - " + tupla.getAdminOfOperador());
             }
         }
         else
@@ -114,6 +120,69 @@ public class FacturaWS
         }
         return facturaNva;
     }
+
+    @PatchMapping(value = "/addDetFactura/{fkFactura}")
+    @Operation(
+            summary = "Attach un DetalleFactura a una factura existente",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public Factura addDetFactura(
+            @PathVariable() int fkFactura,
+            @RequestParam() int fkProducto,
+            @RequestParam() int cantidad,
+            @RequestHeader HttpHeaders headers
+    )
+    {
+        Factura facturaDB = null;
+
+        TuplaEmpresaRolDTO tupla = LoginWS.dameTuplaOperadorLogeado(headers);
+        if (tupla != null)
+        {
+            if (tupla.getAdminOfOperador())
+            {
+                int fkInstalacion = tupla.getFkInstalacion();
+                if (fkFactura != -1)
+                {
+                    facturaDB = facturaREPO.getByIDN(fkFactura);
+                    if (facturaDB != null)
+                    {
+                        Producto productoDB = productoREPO.getByIDN(fkProducto, fkInstalacion);
+
+                        if (productoDB != null)
+                        {
+                            DetFactura detFactura = new DetFactura(cantidad, productoDB, -1, facturaDB, true);
+                            facturaDB.addDetFactura(detFactura);
+
+                            facturaDB = facturaREPO.save(facturaDB);
+                        }
+                        else
+                        {
+                            throw new NotFoundExc("PRODUCTO DB == NULL");
+                        }
+                    }
+                    else
+                    {
+                        throw new NotFoundExc("FACTURA DB == NULL");
+                    }
+                }
+                else
+                {
+                    throw new CustomException("FK FACTURA == -1");
+                }
+            }
+            else
+            {
+                throw new NotAllowedException("SOLO EL ADMIN PUEDE CREAR FACTURAS");
+            }
+        }
+        else
+        {
+            throw new NoLogeadoExc("NO HAY OPERADOR LOGEADO");
+        }
+
+        return facturaDB;
+    }
+
     @GetMapping(value = "/")
     @Operation(
             summary = "Devuelve una Lista de Facturas segun el FK_EMPRESA del operador",
@@ -124,12 +193,12 @@ public class FacturaWS
         List<Factura> arrFacturas = new ArrayList<>();
 
         TuplaEmpresaRolDTO tupla = LoginWS.dameTuplaOperadorLogeado(headers);
-        if(tupla != null)
+        if (tupla != null)
         {
-            if(tupla.getAdminOfOperador())
+            if (tupla.getAdminOfOperador())
             {
                 int fkInstalacion = tupla.getFkInstalacion();
-                arrFacturas  = facturaREPO.findAllByInstalacionForAdminPurposes(fkInstalacion);
+                arrFacturas = facturaREPO.findAllByInstalacionForAdminPurposes(fkInstalacion);
             }
             else
             {
@@ -153,31 +222,78 @@ public class FacturaWS
 
         return arrFacturas;
     }
+
+    @GetMapping(value = "/estado/actual")
+    @Operation(
+            summary = "Devuelve una ResumenCuenta (estado de deuda) de una empresa para el Operador Logeado",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    public ResumenCuenta calcularEstadoDeuda
+            (
+                    @RequestHeader HttpHeaders headers
+            )
+    {
+        ResumenCuenta resumenCuenta = new ResumenCuenta();
+        List<Factura> arrFacturas = new ArrayList<>();
+
+        TuplaEmpresaRolDTO tupla = LoginWS.dameTuplaOperadorLogeado(headers);
+        if (tupla != null)
+        {
+            if (tupla.getAdminOfOperador())
+            {
+                int fkInstalacion = tupla.getFkInstalacion();
+                arrFacturas = facturaREPO.findAllByInstalacionForAdminPurposes(fkInstalacion);
+            }
+            else
+            {
+                int fkEmpresa = tupla.getFKEmpresaPrincipal();
+                if (fkEmpresa != -1)
+                {
+                    arrFacturas = facturaREPO.findAllByFKEmpresa(fkEmpresa);
+                }
+                else
+                {
+                    throw new NotFoundExc("No hay empresa asociada el operador logeado");
+                }
+            }
+        }
+
+        // 1 - ORDENO A LA MAS VIEJA PRIMERO ORDEN NATURAL:
+        Collections.sort(arrFacturas);
+
+        // 2 - HAGO LA REVERSA PARA TENER LA MAS NUEVA ARRIBA:
+        Collections.reverse(arrFacturas);
+
+        resumenCuenta.setArrFacturas(arrFacturas);
+        resumenCuenta.setInstalacion(tupla.getInstalacion());
+        return resumenCuenta;
+    }
+
     @GetMapping(value = "/{id}")
     @Operation(
             summary = "Devuelve Facturas por ID segun el FK_EMPRESA del operador",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     public Factura get
-    (
-        @PathVariable() int id,
-        @RequestHeader HttpHeaders headers)
+            (
+                    @PathVariable() int id,
+                    @RequestHeader HttpHeaders headers
+            )
     {
         Factura facturaDB = null;
 
         TuplaEmpresaRolDTO tupla = LoginWS.dameTuplaOperadorLogeado(headers);
-        if(tupla != null)
+        if (tupla != null)
         {
-            if(tupla.getAdminOfOperador())
+            if (tupla.getAdminOfOperador())
             {
                 int fkInstalacion = tupla.getFkInstalacion();
-                facturaDB  = facturaREPO.getByInstalacionAndID(id, fkInstalacion);
+                facturaDB = facturaREPO.getByInstalacionAndID(id, fkInstalacion);
             }
             else
             {
             }
         }
-
 
 
         return facturaDB;
